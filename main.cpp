@@ -355,6 +355,48 @@ void keyboard(unsigned char key, int x, int y) {
 
         }
     }
+
+    if (current_mode==7){
+		switch (key) {
+			case 'R':
+				if(LOCAL_MyLights[current_light]->diffuse[0]<1){
+					LOCAL_MyLights[current_light]->diffuse[0] = LOCAL_MyLights[current_light]->diffuse[0] + 0.1f;
+					LOCAL_MyLights[current_light]->needsUpdate = TRUE;
+				}
+				break;
+			case 'G':
+				if(LOCAL_MyLights[current_light]->diffuse[1]<1){
+					LOCAL_MyLights[current_light]->diffuse[1] = LOCAL_MyLights[current_light]->diffuse[1] + 0.1f;
+					LOCAL_MyLights[current_light]->needsUpdate = TRUE;
+				}
+				break;
+			case 'B':
+				if(LOCAL_MyLights[current_light]->diffuse[2]<1){
+					LOCAL_MyLights[current_light]->diffuse[2] = LOCAL_MyLights[current_light]->diffuse[2] + 0.1f;
+					LOCAL_MyLights[current_light]->needsUpdate = TRUE;
+				}
+				break;
+			case 'r':
+				if(LOCAL_MyLights[current_light]->diffuse[0]>0){
+					LOCAL_MyLights[current_light]->diffuse[0] = LOCAL_MyLights[current_light]->diffuse[0] - 0.1f;
+					LOCAL_MyLights[current_light]->needsUpdate = TRUE;
+				}
+				break;
+			case 'g':
+				if(LOCAL_MyLights[current_light]->diffuse[1]>0){
+					LOCAL_MyLights[current_light]->diffuse[1] = LOCAL_MyLights[current_light]->diffuse[1] - 0.1f;
+					LOCAL_MyLights[current_light]->needsUpdate = TRUE;
+				}
+				break;
+			case 'b':
+				if(LOCAL_MyLights[current_light]->diffuse[2]>0){
+					LOCAL_MyLights[current_light]->diffuse[2] = LOCAL_MyLights[current_light]->diffuse[2] - 0.1f;
+					LOCAL_MyLights[current_light]->needsUpdate = TRUE;
+				}
+				break;
+		}
+	}
+
     glutPostRedisplay();
 }
 /*
