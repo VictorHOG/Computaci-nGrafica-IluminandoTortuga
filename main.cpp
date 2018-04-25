@@ -9,13 +9,17 @@
 #include <string.h>
 #include <stdlib.h>
 
+static light **LOCAL_MyLights;
+static int current_mode = 0;
+static int current_light = -1;
+
 bool command = false; /* command mode */
 char strCommand[256];
 
 static Camara *MiCamara;
 static int spot_move = 0;
 static int old_x, old_y;
-
+/*
 void display(void) {
     float At[3];
     float Direction[3];
@@ -31,6 +35,44 @@ void display(void) {
     glPopMatrix();
     
     glutSwapBuffers();
+}
+*/
+
+void display(void) {
+	float At[3];
+	float Direction[3];
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_LIGHTING);  
+
+	//SetGLCamera( MiCamara );
+	MiCamara->SetGLCamera();
+
+	SetLight( LOCAL_MyLights[0] );
+	SetLight( LOCAL_MyLights[1] );
+	SetLight( LOCAL_MyLights[2] );
+	glPushMatrix();
+	glColor3f(1.0,1.0,0.0);
+	drawSphereTurtle();
+	switch( current_light ){
+		case 0:
+		case 1:
+		case 2:
+			At[0] = LOCAL_MyLights[current_light]->position[0];
+			At[1] = LOCAL_MyLights[current_light]->position[1];
+			At[2] = LOCAL_MyLights[current_light]->position[2];
+			Direction[0] = - LOCAL_MyLights[current_light]->position[0];
+			Direction[1] = - LOCAL_MyLights[current_light]->position[1];
+			Direction[2] = - LOCAL_MyLights[current_light]->position[2];
+			Draw_Parallel(At);
+			Draw_Meridian(At);
+			Draw_Vector(At, Direction);
+			break;
+		default:
+			break;
+	}
+	glPopMatrix();
+	glutSwapBuffers();
 }
 
 void parseCommand(char* strCommandParse) {
@@ -156,6 +198,29 @@ void Andar(int x, int y) {
     glutPostRedisplay();
 }
 
+void Mouse_Luces_Acercar_Alejar(int x, int y){
+	float step;
+	step = (float) (y - old_y) / 20.0f;
+	old_y = y;
+	Acercar_Alejar_Luces( LOCAL_MyLights[current_light], step );
+	glutPostRedisplay();
+}
+
+void Mouse_Luces(int x, int y){
+	float rot_x, rot_y;
+	rot_y = (float)(old_y - y);
+	rot_x = (float)(x - old_x);
+	Rotar_Luces_Latitud( LOCAL_MyLights[current_light],rot_y*DEGREE_TO_RAD );
+	Rotar_Luces_Longitud( LOCAL_MyLights[current_light], rot_x*DEGREE_TO_RAD);
+	LOCAL_MyLights[current_light]->pointAtInfinity[0] = LOCAL_MyLights[current_light]->position[0];
+	LOCAL_MyLights[current_light]->pointAtInfinity[1] =	LOCAL_MyLights[current_light]->position[1];
+	LOCAL_MyLights[current_light]->pointAtInfinity[2] =	LOCAL_MyLights[current_light]->position[2];
+	old_y = y;
+	old_x = x;
+	glutPostRedisplay();
+}
+
+/*
 void mouse(int button, int state, int x, int y) {
 
     old_x = x;
@@ -196,6 +261,44 @@ void mouse(int button, int state, int x, int y) {
 
     glutPostRedisplay();
 }
+*/
+
+void mouse(int button, int state, int x, int y){
+	old_x = x;
+	old_y = y;
+	switch(button){
+		case GLUT_LEFT_BUTTON:
+			if(current_light > 0){
+				if (state == GLUT_DOWN)
+					glutMotionFunc(Mouse_Luces_Acercar_Alejar);
+				if (state == GLUT_UP){
+					glutPassiveMotionFunc(Mouse_Luces);
+					glutMotionFunc(NULL);
+				}
+			}else{
+				switch(MiCamara->camMovimiento){
+					case CAM_EXAMINAR:
+						if (state == GLUT_DOWN) glutMotionFunc(Zoom);
+						if (state == GLUT_UP){
+							glutPassiveMotionFunc(Examinar);
+							glutMotionFunc(NULL);
+						}
+						break;
+					case CAM_PASEAR:
+						if (state == GLUT_DOWN) glutMotionFunc(Andar);
+						if (state == GLUT_UP) glutMotionFunc(NULL);
+						break;
+				}
+			}
+			break;
+		case GLUT_RIGHT_BUTTON:
+			if (state == GLUT_DOWN) ;
+			break;
+		default:
+			break;
+	}
+	glutPostRedisplay();
+}
 
 void keyboard(unsigned char key, int x, int y) {
     if (command) {
@@ -212,6 +315,8 @@ void keyboard(unsigned char key, int x, int y) {
         }
     } else { // not in command mode
         switch (key) {
+
+
             case 'h':
                 printf("help\n\n");
                 printf("c - Toggle culling\n");
@@ -233,15 +338,25 @@ void keyboard(unsigned char key, int x, int y) {
                 command = true;
                 break;
             case 'q':
-            case 27:
+         /*   case 27:
                 delete MiCamara;
                 exit(0);
                 break;
+                */
+			case 27:
+				DestroyCamera(&MiCamara);
+				DestroyLight( LOCAL_MyLights[0] );
+				DestroyLight( LOCAL_MyLights[1] );
+				DestroyLight( LOCAL_MyLights[2] );
+				free (LOCAL_MyLights);
+				exit(0);
+				break;
+
         }
     }
     glutPostRedisplay();
 }
-
+/*
 static void SpecialKey(int key, int x, int y) {
     switch (key) {
         case GLUT_KEY_F1:
@@ -305,10 +420,64 @@ static void SpecialKey(int key, int x, int y) {
             printf("key %d %c X %d Y %d\n", key, key, x, y);
     }
     glutPostRedisplay();
+}*/
+
+static void SpecialKey ( int key, int x, int y ){
+	switch(key) {
+		case GLUT_KEY_F1:
+			current_mode = 0;
+			glutPassiveMotionFunc(MouseMotion);
+			MiCamara->camMovimiento = CAM_STOP;
+			current_light = -1;
+			break;
+		case GLUT_KEY_F2:
+			if (current_mode != 0) break;
+			current_mode = 1;
+			glutPassiveMotionFunc(Examinar);
+			MiCamara->camMovimiento = CAM_EXAMINAR;
+			break;
+		case GLUT_KEY_F3:
+			if (current_mode != 0) break;
+			current_mode = 2;
+			glutPassiveMotionFunc(MouseMotion);
+			MiCamara->camMovimiento = CAM_PASEAR;
+			MiCamara->camAtY = 0;
+			MiCamara->camViewY = 0;
+			SetDependentParametersCamera( MiCamara );
+			break;
+		case GLUT_KEY_F8:
+			if (current_mode != 0 && current_mode != 7) break;
+			current_mode = 7;
+			if (current_light == -1) glutPassiveMotionFunc(Mouse_Luces);
+			if (current_light != 2) current_light++;
+			else current_light = 0;
+			printf("Luz actual = %d\n",current_light);
+			break;
+		case GLUT_KEY_F9:
+			if (current_light != -1)
+			if ( LOCAL_MyLights[current_light]->switched )
+			SwitchLight( LOCAL_MyLights[current_light], FALSE);
+			else SwitchLight( LOCAL_MyLights[current_light], TRUE);
+			break;
+		case GLUT_KEY_HOME: //Reset Camera
+			MiCamara->camAtX =0;
+			MiCamara->camAtY =0;
+			MiCamara->camAtZ =0;
+			MiCamara->camViewX = 0;
+			MiCamara->camViewY = 1;
+			MiCamara->camViewZ = -3;
+			SetDependentParametersCamera( MiCamara );
+			break;
+		default:
+			printf("key %d %c X %d Y %d\n", key, key, x, y );
+	}
+	glutPostRedisplay();
 }
 
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
+
+    int i;
 
     // Colocamos la cámara en (0,1,-3) mirando hacia (0,0,0)
     MiCamara = new Camara(0.0f, 1.0f, -3.0f);
@@ -328,6 +497,24 @@ int main(int argc, char** argv) {
     glutMouseFunc(mouse); //Pulsado de Botones
     glutMotionFunc(NULL); //Movimiento con Botones pulsados
     glutPassiveMotionFunc(MouseMotion); //Movimientos sin Botones pulsados
+
+    //Reservamos memoria para tres interfaces de luces
+	LOCAL_MyLights = (light **) malloc( 3 * sizeof(light *));
+	//Creamos las luces y damos a cada una sus características
+	for(i=0;i<3;i++){
+		LOCAL_MyLights[i] = CreateDefaultLight();
+		LOCAL_MyLights[i]->type = AGA_DIRECTIONAL;
+		LOCAL_MyLights[i]->id = GL_LIGHT0 + i;
+		LOCAL_MyLights[i]->position[0] = 1.0f;
+		LOCAL_MyLights[i]->position[1] = 1.0f;
+		LOCAL_MyLights[i]->position[2] = 1.0f;
+		LOCAL_MyLights[i]->position[3] = 0.0f;
+		LOCAL_MyLights[i]->pointAtInfinity[0] = LOCAL_MyLights[0]->position[0];
+		LOCAL_MyLights[i]->pointAtInfinity[1] = LOCAL_MyLights[0]->position[1];
+		LOCAL_MyLights[i]->pointAtInfinity[2] = LOCAL_MyLights[0]->position[2];
+	}
+
+	glEnable(GL_COLOR_MATERIAL);
 
     glutMainLoop();
     return 0;
