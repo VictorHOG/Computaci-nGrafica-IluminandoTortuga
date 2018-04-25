@@ -1,3 +1,10 @@
+/*
+**Integrantes:
+**Diana Melissa Millares - 1526062
+**Carlos Felipe Montoya - 1535038
+**Víctor Hugo Ortega Gómez - 1532342
+**/
+
 #ifndef LIGHT_H
 #define LIGHT_H
 #define AGA_DIRECTIONAL 1

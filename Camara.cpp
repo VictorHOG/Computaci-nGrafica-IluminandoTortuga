@@ -1,3 +1,10 @@
+/*
+**Integrantes:
+**Diana Melissa Millares - 1526062
+**Carlos Felipe Montoya - 1535038
+**Víctor Hugo Ortega Gómez - 1532342
+**/
+
 #include "Camara.h"
 #include <stdlib.h>
 #include <GL/glut.h>

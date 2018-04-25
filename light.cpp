@@ -1,3 +1,10 @@
+/*
+**Integrantes:
+**Diana Melissa Millares - 1526062
+**Carlos Felipe Montoya - 1535038
+**Víctor Hugo Ortega Gómez - 1532342
+**/
+
 #include <GL/glut.h>
 #include "light.h"
 #include "Vector_tools.h"
