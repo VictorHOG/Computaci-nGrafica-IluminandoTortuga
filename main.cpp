@@ -345,6 +345,7 @@ void keyboard(unsigned char key, int x, int y) {
                 */
 			case 27:
 			//	DestroyCamera(&MiCamara);
+				delete MiCamara;
 				DestroyLight( LOCAL_MyLights[0] );
 				DestroyLight( LOCAL_MyLights[1] );
 				DestroyLight( LOCAL_MyLights[2] );
