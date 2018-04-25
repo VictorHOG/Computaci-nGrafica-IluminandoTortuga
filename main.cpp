@@ -3,6 +3,7 @@
 #include "Camara.h"
 #include "primitivas.h"
 #include "Vector_tools.h"
+#include "light.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -206,7 +207,7 @@ void keyboard(unsigned char key, int x, int y) {
         } else {
             char strKey[2] = " ";
             strKey[0] = key;
-            printf(strKey);
+            printf("%s",strKey);
             strcat(strCommand, strKey);
         }
     } else { // not in command mode
