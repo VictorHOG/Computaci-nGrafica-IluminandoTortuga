@@ -344,7 +344,7 @@ void keyboard(unsigned char key, int x, int y) {
                 break;
                 */
 			case 27:
-				DestroyCamera(&MiCamara);
+			//	DestroyCamera(&MiCamara);
 				DestroyLight( LOCAL_MyLights[0] );
 				DestroyLight( LOCAL_MyLights[1] );
 				DestroyLight( LOCAL_MyLights[2] );
@@ -443,7 +443,7 @@ static void SpecialKey ( int key, int x, int y ){
 			MiCamara->camMovimiento = CAM_PASEAR;
 			MiCamara->camAtY = 0;
 			MiCamara->camViewY = 0;
-			SetDependentParametersCamera( MiCamara );
+			MiCamara->SetDependentParametersCamera();
 			break;
 		case GLUT_KEY_F8:
 			if (current_mode != 0 && current_mode != 7) break;
@@ -466,7 +466,7 @@ static void SpecialKey ( int key, int x, int y ){
 			MiCamara->camViewX = 0;
 			MiCamara->camViewY = 1;
 			MiCamara->camViewZ = -3;
-			SetDependentParametersCamera( MiCamara );
+			MiCamara->SetDependentParametersCamera();
 			break;
 		default:
 			printf("key %d %c X %d Y %d\n", key, key, x, y );
